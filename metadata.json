@@ -1,0 +1,5 @@
+{
+  "name": "Firebase of JQuiz - Japanese Vocabulary Master",
+  "description": "A modern, dark-themed Japanese vocabulary quiz app that loads data dynamically from Google Sheets or JSON. Features text-to-speech, score tracking, and responsive design.",
+  "requestFramePermissions": []
+}
