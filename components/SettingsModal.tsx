@@ -1,7 +1,11 @@
 
 import React, { useState } from 'react';
 import { Settings, X, User as UserIcon, LogOut, KeyRound, FileJson, Loader2, Palette } from 'lucide-react';
-import { updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+  updatePassword, 
+  linkWithCredential, 
+  EmailAuthProvider 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { WordStats, StatsMap, VocabularyItem, AppTheme } from '../types';
 import { APP_THEMES } from '../config';
 import { updateThemeSetting } from '../logic';
@@ -25,11 +29,17 @@ export default function SettingsModal({
 }: SettingsModalProps) {
   const [newPassword, setNewPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
+  
+  const [linkPassword, setLinkPassword] = useState('');
+  const [linkLoading, setLinkLoading] = useState(false);
+
   const [jsonInput, setJsonInput] = useState('');
 
   // Calculate Aggregates
   const totalCorrect = (Object.values(stats) as WordStats[]).reduce((acc, s) => acc + s.correct, 0);
   const totalAttempts = (Object.values(stats) as WordStats[]).reduce((acc, s) => acc + s.total, 0);
+
+  const hasPasswordProvider = user.providerData.some((p: any) => p.providerId === 'password');
 
   const handleChangePassword = async () => {
     if (!user || !newPassword) return;
@@ -51,6 +61,36 @@ export default function SettingsModal({
       onNotification('error', msg);
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const handleLinkAccount = async () => {
+    if (!user || !user.email || !linkPassword) return;
+    if (linkPassword.length < 6) {
+      onNotification('error', "Password must be at least 6 characters.");
+      return;
+    }
+    setLinkLoading(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, linkPassword);
+      await linkWithCredential(user, credential);
+      onNotification('success', "Email/Password login enabled successfully.");
+      setLinkPassword('');
+    } catch (error: any) {
+      console.error("Link Account Error:", error);
+      let msg = "Failed to link account.";
+      if (error.code === 'auth/requires-recent-login') {
+        msg = "Please log out and log in again to perform this action.";
+      } else if (error.code === 'auth/credential-already-in-use') {
+        msg = "This email is already associated with another account.";
+      } else if (error.code === 'auth/invalid-email') {
+        msg = "Invalid email address.";
+      } else if (error.code === 'auth/weak-password') {
+        msg = "Password is too weak.";
+      }
+      onNotification('error', msg);
+    } finally {
+      setLinkLoading(false);
     }
   };
 
@@ -143,8 +183,8 @@ export default function SettingsModal({
              </div>
           </div>
 
-           {/* Password Change */}
-           {user.providerData.some((p: any) => p.providerId === 'password') && (
+           {/* Account Management: Change Password OR Link Account */}
+           {hasPasswordProvider ? (
             <div className={`bg-${theme.colors.card}-800 p-4 rounded-xl border border-${theme.colors.bg}-700`}>
               <h3 className={`text-[10px] font-black text-${theme.colors.text}-500 uppercase tracking-widest mb-3`}>Change Password</h3>
               <div className="flex gap-2">
@@ -167,7 +207,35 @@ export default function SettingsModal({
                 </button>
               </div>
             </div>
-          )}
+           ) : (
+            <div className={`bg-${theme.colors.card}-800 p-4 rounded-xl border border-${theme.colors.bg}-700`}>
+              <h3 className={`text-[10px] font-black text-${theme.colors.text}-500 uppercase tracking-widest mb-3`}>
+                Enable Email Login
+              </h3>
+              <p className={`text-xs text-${theme.colors.text}-400 mb-3`}>
+                Set a password to log in with your email ({user.email}) in the future.
+              </p>
+              <div className="flex gap-2">
+                 <div className="relative flex-grow">
+                   <KeyRound className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-500" />
+                   <input
+                     type="password"
+                     value={linkPassword}
+                     onChange={(e) => setLinkPassword(e.target.value)}
+                     placeholder="Set Password (min 6 chars)"
+                     className={`w-full bg-${theme.colors.bg}-950/50 border border-${theme.colors.bg}-700 rounded-lg py-2 pl-9 pr-2 text-gray-100 placeholder-gray-500 text-xs focus:outline-none focus:ring-1 focus:ring-${theme.colors.primary}-500`}
+                   />
+                 </div>
+                 <button 
+                   onClick={handleLinkAccount}
+                   disabled={linkLoading || !linkPassword}
+                   className={`px-3 py-2 rounded-lg font-bold bg-${theme.colors.primary}-600 hover:bg-${theme.colors.primary}-500 text-white text-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all`}
+                 >
+                   {linkLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enable"}
+                 </button>
+              </div>
+            </div>
+           )}
 
           {/* Data Sync */}
           <div className={`bg-${theme.colors.card}-800 p-4 rounded-xl border border-${theme.colors.bg}-700`}>
