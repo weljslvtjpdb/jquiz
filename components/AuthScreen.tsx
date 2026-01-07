@@ -2,25 +2,32 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Loader2, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { 
-  signInWithCredential, 
   signInWithPopup, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  GoogleAuthProvider 
+  createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { auth, googleProvider } from '../firebase';
-import { NotificationState } from '../types';
+import { NotificationState, AppTheme } from '../types';
 
 interface AuthScreenProps {
   onNotification: (type: 'success' | 'error', message: string) => void;
   notification: NotificationState | null;
+  theme?: AppTheme;
 }
 
-export default function AuthScreen({ onNotification, notification }: AuthScreenProps) {
+export default function AuthScreen({ onNotification, notification, theme }: AuthScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Default theme if not provided
+  const colors = theme?.colors || {
+    bg: 'gray',
+    primary: 'indigo',
+    secondary: 'purple',
+    text: 'gray'
+  };
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +74,7 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
   };
 
   return (
-    <div className="bg-gray-950 text-gray-100 min-h-screen flex items-center justify-center p-6 selection:bg-indigo-500/30">
+    <div className={`bg-${colors.bg}-950 text-gray-100 min-h-screen flex items-center justify-center p-6 selection:bg-${colors.primary}-500/30`}>
       <div className="w-full max-w-md space-y-8 animate-fade-in text-center">
         
         {notification && (
@@ -80,18 +87,18 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
         )}
 
         <div className="space-y-4">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-indigo-600/30 mx-auto transform rotate-12">
+          <div className={`w-20 h-20 bg-${colors.primary}-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-${colors.primary}-600/30 mx-auto transform rotate-12`}>
             <span className="text-white font-black text-4xl">J</span>
           </div>
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-tighter">
+          <h1 className={`text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-${colors.primary}-400 to-${colors.secondary}-400 tracking-tighter`}>
             JQUIZ
           </h1>
-          <p className="text-gray-400 font-medium">
+          <p className={`text-${colors.text}-400 font-medium`}>
             {authMode === 'login' ? 'Sign in to continue learning' : 'Create an account to get started'}
           </p>
         </div>
 
-        <div className="bg-gray-900/50 backdrop-blur-xl border border-gray-800 p-8 rounded-[2.5rem] shadow-2xl">
+        <div className={`bg-${colors.bg}-900/50 backdrop-blur-xl border border-${colors.bg}-800 p-8 rounded-[2.5rem] shadow-2xl`}>
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div className="space-y-2 text-left">
               <div className="relative">
@@ -101,7 +108,7 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-gray-950/50 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className={`w-full bg-${colors.bg}-950/50 border border-${colors.bg}-700 rounded-xl py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-${colors.primary}-500 transition-all`}
                   required
                 />
               </div>
@@ -112,7 +119,7 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-gray-950/50 border border-gray-700 rounded-xl py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                  className={`w-full bg-${colors.bg}-950/50 border border-${colors.bg}-700 rounded-xl py-3 pl-10 pr-4 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-${colors.primary}-500 transition-all`}
                   required
                   minLength={6}
                 />
@@ -122,7 +129,7 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-indigo-600/20"
+              className={`w-full flex items-center justify-center gap-2 bg-${colors.primary}-600 hover:bg-${colors.primary}-500 text-white font-bold py-3.5 px-6 rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-${colors.primary}-600/20`}
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -136,9 +143,9 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
           </form>
 
           <div className="my-6 flex items-center gap-3">
-            <div className="h-px bg-gray-800 flex-1" />
+            <div className={`h-px bg-${colors.bg}-800 flex-1`} />
             <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Or</span>
-            <div className="h-px bg-gray-800 flex-1" />
+            <div className={`h-px bg-${colors.bg}-800 flex-1`} />
           </div>
 
           <button 
@@ -156,16 +163,15 @@ export default function AuthScreen({ onNotification, notification }: AuthScreenP
           </button>
 
           <div className="mt-6 text-sm">
-            <span className="text-gray-400">
+            <span className={`text-${colors.text}-400`}>
               {authMode === 'login' ? "Don't have an account? " : "Already have an account? "}
             </span>
             <button 
               onClick={() => {
                 setAuthMode(authMode === 'login' ? 'register' : 'login');
                 onNotification('success', authMode === 'login' ? 'Switching to Register' : 'Switching to Login');
-                // We don't have easy access to state reset here without props, simplifying for now
               }}
-              className="text-indigo-400 hover:text-indigo-300 font-bold transition-colors"
+              className={`text-${colors.primary}-400 hover:text-${colors.primary}-300 font-bold transition-colors`}
             >
               {authMode === 'login' ? 'Sign up' : 'Sign in'}
             </button>

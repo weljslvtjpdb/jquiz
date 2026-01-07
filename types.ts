@@ -19,6 +19,10 @@ export interface FirestoreVocabData {
   f: number;
 }
 
+export interface FirestoreSettings {
+  themeIndex?: number;
+}
+
 export interface StatsMap {
   [key: string]: WordStats;
 }
@@ -28,4 +32,16 @@ export type ViewState = 'menu' | 'playing' | 'result';
 export interface NotificationState {
   type: 'success' | 'error';
   message: string;
+}
+
+export interface AppTheme {
+  id: string;
+  name: string;
+  colors: {
+    bg: string;
+    card: string;
+    primary: string;
+    secondary: string;
+    text: string;
+  };
 }
