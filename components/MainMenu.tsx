@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Play, Settings, RefreshCw, CloudDownload, FileJson, Loader2, Trophy } from 'lucide-react';
+import { Play, Settings, RefreshCw, CloudDownload, FileJson, Loader2 } from 'lucide-react';
 import { VocabularyItem, StatsMap, WordStats, AppTheme } from '../types';
 
 interface MainMenuProps {
@@ -62,6 +61,7 @@ export default function MainMenu({ user, data, stats, onStart, onManage, onSync,
               >
                 <Play className="fill-current w-4 h-4 group-hover:scale-110 transition-transform" /> Start Intelligent Session
               </button>
+              
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={onManage} 
@@ -80,15 +80,16 @@ export default function MainMenu({ user, data, stats, onStart, onManage, onSync,
             </div>
           </>
         ) : (
-          <div className="py-2">
+          <div className="py-2 space-y-3">
             <div className={`mb-4 text-${theme.colors.text}-400 text-sm`}>No data loaded yet.</div>
+            
             <button 
               onClick={() => onSync(false)} 
               disabled={isLoading}
-              className="w-full mb-3 px-4 py-3 rounded-xl font-bold bg-green-700 hover:bg-green-600 text-white shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
+              className="w-full px-4 py-3 rounded-xl font-bold bg-green-700 hover:bg-green-600 text-white shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95 disabled:opacity-50"
             >
               {isLoading ? <Loader2 className="animate-spin w-4 h-4" /> : <CloudDownload className="w-4 h-4" />}
-              Load Vocabulary
+              Load Pre-set Vocabulary
             </button>
             <button 
               onClick={onManage} 

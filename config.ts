@@ -13,8 +13,8 @@ export const firebaseConfig = {
 // Added range=A:F to limit data transfer
 export const CSV_EXPORT_URL = `https://docs.google.com/spreadsheets/d/1N4OnmHhP-wx4E8P8arFImTU6Pl9Tmm6bkx772yUCZe8/export?format=csv&range=A:F`;
 export const STORAGE_KEY_STATS = 'jquiz_word_stats';
-export const TIMEOUT_MS = 10000; // 10 seconds
-export const MASTERY_THRESHOLD = 10;
+export const TIMEOUT_MS = 30000; // 30 seconds
+export const MASTERY_THRESHOLD = 7;
 
 // --- Themes ---
 export const APP_THEMES = [

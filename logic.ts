@@ -1,5 +1,4 @@
-
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc, updateDoc, FieldPath } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from './firebase';
 import { User } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { StatsMap } from './types';
@@ -47,12 +46,23 @@ export const processAnswerResult = async (
   // 3. Fire-and-forget Cloud Update
   if (user) {
     const docId = user.email ? user.email.toLowerCase() : user.uid;
-    // We use merge: true so we don't overwrite other fields (like settings)
-    setDoc(doc(db, "users", docId), {
-      vocabulary: {
-        [word]: { s: newS, f: newF }
-      }
-    }, { merge: true }).catch(err => console.error("Cloud save failed", err));
+    const userRef = doc(db, "users", docId);
+    
+    // SAFETY UPDATE: 
+    // Instead of using setDoc to merge the whole structure (which carries risk if map structure is ambiguous),
+    // we use updateDoc with FieldPath. This targets ONLY the specific key 'vocabulary.word'.
+    // It will NEVER touch or clear other words in the vocabulary map.
+    try {
+        await updateDoc(userRef, new FieldPath('vocabulary', word), { s: newS, f: newF });
+    } catch (e) {
+        // Fallback: If the 'vocabulary' map doesn't exist yet (first time user), updateDoc fails.
+        // We catch this and use setDoc with merge to CREATE the structure safely.
+        await setDoc(userRef, {
+            vocabulary: {
+                [word]: { s: newS, f: newF }
+            }
+        }, { merge: true }).catch(err => console.error("Cloud save failed", err));
+    }
   }
 
   return {
@@ -67,15 +77,23 @@ export const processAnswerResult = async (
  */
 export const updateThemeSetting = async (user: User, themeIndex: number) => {
   const docId = user.email ? user.email.toLowerCase() : user.uid;
+  const userRef = doc(db, "users", docId);
   try {
-    await setDoc(doc(db, "users", docId), {
-      settings: {
-        themeIndex: themeIndex
-      }
-    }, { merge: true });
+    // Attempt update first
+    await updateDoc(userRef, new FieldPath("settings", "themeIndex"), themeIndex);
     return true;
   } catch (error) {
-    console.error("Failed to save theme", error);
-    return false;
+    // Fallback to setDoc merge if doc doesn't exist
+    try {
+        await setDoc(userRef, {
+            settings: {
+                themeIndex: themeIndex
+            }
+        }, { merge: true });
+        return true;
+    } catch (e) {
+        console.error("Failed to save theme", e);
+        return false;
+    }
   }
 };

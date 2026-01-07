@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   AlertCircle,
@@ -104,8 +103,11 @@ export default function App() {
 
             } else {
               setStats({});
-              // Initialize doc if it doesn't exist
-              setDoc(userDocRef, { vocabulary: {}, settings: { themeIndex: 0 } }, { merge: true }).catch(console.error);
+              // Initialize doc if it doesn't exist.
+              // CRITICAL FIX: Do NOT initialize 'vocabulary: {}' here. 
+              // Leaving it undefined prevents accidental overwrites of existing data if connection is flaky.
+              // We only initialize settings. logic.ts will handle creating vocabulary fields safely.
+              setDoc(userDocRef, { settings: { themeIndex: 0 } }, { merge: true }).catch(console.error);
             }
           }, (error) => {
              console.error("Firestore Snapshot Error:", error);
